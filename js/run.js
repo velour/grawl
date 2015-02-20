@@ -99,7 +99,7 @@ function generateWorld() {
 		}
 	}
 
-	for(var i = 0; i < numUntis; i++) {
+	for(var i = 0; i < numRoyalty; i++) {
 		var x = Math.floor(Math.random() * tilesWide);
 		var y = Math.floor(Math.random() * tilesHigh);
 		
@@ -178,7 +178,7 @@ function loadImagesThenGo() {
 		}
 
 		for(var i = 0; i < numRoyalty; i++) {
-			untiSprites.push(sprite({
+			royaltySprites.push(sprite({
 				context: context,
 				image: royalty,
 				numberOfHorizontalFrames : 2,
