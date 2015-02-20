@@ -27,6 +27,40 @@ var chests = [];
 var untis = [];
 var royalties = [];
 
+function reshuffleGame() {
+	grid = [];
+	chests = [];
+	untis = [];
+	royalties = [];
+
+	generateWorld();
+
+	drawGrid();
+
+	knightSprite = sprite({
+		context: context,
+		image: knight,
+		numberOfHorizontalFrames : 2,
+		numberOfVerticalFrames : 1,
+		ticksPerFrame : 20,
+		loop : true,
+		knight: true
+	});
+
+	for(var i = 0; i < numChests; i++) {
+		chestSprites[i].hide = false;
+		chestSprites[i].updateLocation(chests[i].x, chests[i].y);
+	}
+
+	for(var i = 0; i < numUntis; i++) {
+		untiSprites[i].updateLocation(untis[i].x, untis[i].y);
+	}
+
+	for(var i = 0; i < numRoyalty; i++) {
+		royaltySprites[i].updateLocation(royalties[i].x, royalties[i].y);
+	}	
+}
+
 function generateWorld() {
 	var remainingChests = numChests;
 	for(var r = 0; r < tilesWide; r++) {
@@ -278,7 +312,7 @@ function sprite (options) {
 			}
 
 			if(grid[that.gridX][that.gridY].unti && that.knight) {
-				that.x = 0; that.y = 0; that.gridX = 0; that.gridY = 0;
+				that.updateLocation(0,0);
 			}
 			if(grid[that.gridX][that.gridY].chest && that.knight) {
 				grid[that.gridX][that.gridY].chest = false;
@@ -312,6 +346,12 @@ function sprite (options) {
 		}
 
 	};
+	that.updateLocation = function(gridX, gridY) {
+		that.gridX = gridX;
+		that.gridY = gridY;
+		that.x = that.gridX * that.frameWidth * scale;
+		that.y = that.gridY * that.frameHeight * scale;
+	}
 	return that;
 }
 
@@ -321,7 +361,9 @@ function gameLoop() {
 
   window.requestAnimationFrame(gameLoop);
   
+  var theyWon = true;
   for(var i = 0; i < chestSprites.length; i++) {
+  	if(!chestSprites[i].hide) theyWon = false;
   	chestSprites[i].update();
   	chestSprites[i].render();
   }
@@ -338,6 +380,10 @@ function gameLoop() {
 
   knightSprite.update();
   knightSprite.render();
+
+  if(theyWon) {
+  	reshuffleGame();
+  }
 }
 
 var keyPressed = false;
