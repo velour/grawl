@@ -172,10 +172,12 @@ function drawGrid() {
 
 	var canvas = document.getElementById("background");
 	var context = canvas.getContext("2d");
+	context.imageSmoothingEnabled = false;
 	canvas.width = canvas1.width = unblockedTile.width * tilesWide * scale;
 	canvas.height = canvas1.height = unblockedTile.height * tilesHigh * scale;
 
 	function drawImage(img,x,y) {
+		context.imageSmoothingEnabled = false;
 		context.drawImage(img, x, y, img.width * scale, img.height * scale);
 	}
 
@@ -296,6 +298,7 @@ function sprite (options) {
 
 		// Draw the animation
 		if(!that.hide)
+		that.context.imageSmoothingEnabled = false;
 		that.context.drawImage(
 			that.image,
 			xOff,
