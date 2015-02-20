@@ -288,7 +288,6 @@ function sprite (options) {
 						break;
 					}
 				}
-				console.log(" ");
 			}
 		}
 	}; 
@@ -297,19 +296,20 @@ function sprite (options) {
 		var yOff = Math.floor(that.frameIndex / that.numberOfHorizontalFrames) * that.frameHeight;
 
 		// Draw the animation
-		if(!that.hide)
-		that.context.imageSmoothingEnabled = false;
-		that.context.drawImage(
-			that.image,
-			xOff,
-			yOff,
-			that.frameWidth,
-			that.frameHeight,
-			that.x,
-			that.y,
-			that.frameWidth * scale,
-			that.frameHeight * scale
-		);
+		if(!that.hide) {
+			that.context.imageSmoothingEnabled = false;
+			that.context.drawImage(
+				that.image,
+				xOff,
+				yOff,
+				that.frameWidth,
+				that.frameHeight,
+				that.x,
+				that.y,
+				that.frameWidth * scale,
+				that.frameHeight * scale
+			);
+		}
 
 	};
 	return that;
