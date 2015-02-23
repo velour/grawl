@@ -173,7 +173,8 @@ function loadImagesThenGo() {
 				gridX : untis[i].x,
 				gridY : untis[i].y,
 				ticksPerFrame : 20,
-				loop : true
+				loop : true,
+				unti : true
 			}));
 		}
 
@@ -231,6 +232,7 @@ function sprite (options) {
 	var that = {};
 	that.image = options.image;
 	that.knight = options.knight;
+	that.unti = options.unti;
 
 	that.numberOfHorizontalFrames = options.numberOfHorizontalFrames || 1;
 	that.numberOfVerticalFrames = options.numberOfVerticalFrames || 1;
@@ -269,7 +271,13 @@ function sprite (options) {
 
 			that.context.clearRect(that.x, that.y, that.frameWidth * scale, that.frameHeight * scale);
 
-			if(keyPressed) {
+			if(that.unti) {
+				grid[that.gridX][that.gridY].unti = false;
+			} else if(grid[that.gridX][that.gridY].unti && that.knight) {
+				that.updateLocation(0,0);
+			}
+
+			if((keyPressed && that.knight) || that.unti) {
 				switch(that.move) {
 					case 0:
 						if(that.gridX <= 0) break;
@@ -311,7 +319,9 @@ function sprite (options) {
 				}
 			}
 
-			if(grid[that.gridX][that.gridY].unti && that.knight) {
+			if(that.unti) {
+				grid[that.gridX][that.gridY].unti = true;
+			} else if(grid[that.gridX][that.gridY].unti && that.knight) {
 				that.updateLocation(0,0);
 			}
 			if(grid[that.gridX][that.gridY].chest && that.knight) {
@@ -369,6 +379,7 @@ function gameLoop() {
   }
 
   for(var i = 0; i < untiSprites.length; i++) {
+  	untiSprites[i].move = Math.floor(Math.random() * 4);
   	untiSprites[i].update();
   	untiSprites[i].render();
   }
