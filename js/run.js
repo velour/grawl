@@ -412,15 +412,20 @@ function sprite (options) {
 				grid[that.gridX][that.gridY].unti = true;
 			} else if(that.knight) {
 				if(grid[that.gridX][that.gridY].unti && that.nerd <= 0) {
+					document.getElementById('hitSound').play();
 					document.getElementById('untis').textContent = ++untiCrashes;
 					setAlertMessage("Ah! Untis hurt!");
 					that.updateLocation(0,0);
 				} else if(grid[that.gridX][that.gridY].beer && that.nerd <= 0) {
+					document.getElementById('drinkSound').play();
 					document.getElementById('beers').textContent = ++beersConsumed;
 					setAlertMessage("You've consumed a beer and gained fantastic nerd powers!");
 					that.goNerd();
+				} else if(grid[that.gridX][that.gridY].royalty) {
+					document.getElementById('royaltySound').play();
 				} else if(grid[that.gridX][that.gridY].chest) {
 					grid[that.gridX][that.gridY].chest = false;
+					document.getElementById('chestSound').play();
 					document.getElementById('chests').textContent = ++chestsOpened;
 					setAlertMessage("Wooo! Another chest!");
 					for(var i = 0; i < chestSprites.length; i++) {
@@ -498,6 +503,7 @@ function gameLoop() {
 
   if(theyWon) {
   	document.getElementById('levels').textContent = ++levelsCleared;
+  	document.getElementById('levelupSound').play();
   	setAlertMessage("LEVEL UP!");
   	reshuffleGame();
   }
