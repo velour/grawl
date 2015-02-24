@@ -1,0 +1,34 @@
+<html>
+<head>
+	<title>GRAWL</title>
+<style>
+canvas {
+	position:absolute;
+	top:60px;
+}
+#scoreboard div {
+	display: inline;
+}
+
+#scoreboard div:nth-child(2) {
+	padding-left:500px;
+}
+</style>
+</head>
+<body>
+<div id="scoreboard">
+	<div>
+		levels cleared: <span id="levels">0</span><br/>
+		unti crashes: <span id="untis">0</span><br/>
+		beers consumed: <span id="beers">0</span><br/>
+		chests opened: <span id="chests">0</span>
+	</div>
+	<div>
+		<span id="alert"></span>
+	</div>
+</div>
+<canvas id="background"></canvas>
+<canvas id="canvas"></canvas>
+<script src="js/run.js"></script>
+</body>
+</html>
