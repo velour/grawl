@@ -365,7 +365,7 @@ function sprite (options) {
 					that.updateLocation(0,0);
 			}
 
-			if((keyPressed && that.knight) || that.unti) {
+			if(that.knight || that.unti) {
 				switch(that.move) {
 					case 0:
 						if(that.gridX <= 0) break;
@@ -405,6 +405,7 @@ function sprite (options) {
 						break;
 					default:
 				}
+				that.move = -1;
 			}
 
 			if(that.unti) {
@@ -502,7 +503,6 @@ function gameLoop() {
   }
 }
 
-var keyPressed = false;
 function doKeyDown(e) {
 	switch(e.keyCode) {
 		case 37: //left
@@ -520,13 +520,11 @@ function doKeyDown(e) {
 		default:
 		return;
 	}
-	keyPressed = true;
 }
 window.addEventListener("keydown", doKeyDown, true);
 
-function doKeyUp(e) {
-	keyPressed = false;
-}
+function doKeyUp(e) {}
+
 window.addEventListener("keyup", doKeyUp, true);
 
 var timeout = null;
