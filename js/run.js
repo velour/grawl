@@ -3,8 +3,10 @@ var tilesHigh = 10;
 var scale = 4;
 var blocked = 0.15;
 var numChests = 4;
-var numUntis = 5;
+var numUntis = 4;
 var numRoyalty = 2;
+var numBeers = 1;
+var nerdPowerDuration = 250;
 
 var canvas = document.getElementById("canvas");
 var context = canvas.getContext("2d");
@@ -17,35 +19,35 @@ var knight = new Image();
 var chest = new Image();
 var unti = new Image();
 var royalty = new Image();
+var beer = new Image();
+var nerds = new Image();
 var knightSprite = null;
 var chestSprites = [];
 var untiSprites = [];
 var royaltySprites = [];
+var beerSprites = [];
+var nerdSprites = [];
 
 var grid = [];
 var chests = [];
 var untis = [];
 var royalties = [];
+var beers = [];
 
 function reshuffleGame() {
 	grid = [];
 	chests = [];
 	untis = [];
 	royalties = [];
+	beers = [];
 
 	generateWorld();
 
 	drawGrid();
 
-	knightSprite = sprite({
-		context: context,
-		image: knight,
-		numberOfHorizontalFrames : 2,
-		numberOfVerticalFrames : 1,
-		ticksPerFrame : 20,
-		loop : true,
-		knight: true
-	});
+	knightSprite.goKnight();
+	knightSprite.updateLocation(0, 0);
+
 
 	for(var i = 0; i < numChests; i++) {
 		chestSprites[i].hide = false;
@@ -58,7 +60,11 @@ function reshuffleGame() {
 
 	for(var i = 0; i < numRoyalty; i++) {
 		royaltySprites[i].updateLocation(royalties[i].x, royalties[i].y);
-	}	
+	}
+
+	for(var i = 0; i < numBeers; i++) {
+		beerSprites[i].updateLocation(beers[i].x, beers[i].y);
+	}
 }
 
 function generateWorld() {
@@ -110,10 +116,32 @@ function generateWorld() {
 			i--;
 		}
 	}
+
+	for(var i = 0; i < numBeers; i++) {
+		var x = Math.floor(Math.random() * tilesWide);
+		var y = Math.floor(Math.random() * tilesHigh);
+		
+		if(!grid[x][y].blocked && !grid[x][y].chest && !grid[x][y].unti && !grid[x][y].royalty && (x + y != 0)) {
+			grid[x][y].beer = true;
+			beers.push({ x : x, y: y});
+		} else {
+			i--;
+		}
+	}	
 }
 
 function loadImagesThenGo() {
 	function knightReady() {
+		nerds.addEventListener("load", nerdsReady);
+		nerds.src = "img/nerds.png";
+	}
+
+	function nerdsReady() {
+		beer.addEventListener("load", beerReady);
+		beer.src = "img/drink.png";
+	}
+
+	function beerReady() {
 		unti.addEventListener("load", untiReady);
 		unti.src = "img/unti.png";
 	}
@@ -149,6 +177,19 @@ function loadImagesThenGo() {
 			ticksPerFrame : 20,
 			loop : true,
 			knight: true
+		});
+
+		nerdSprite = sprite({
+			context: context,
+			image: knight,
+			numberOfHorizontalFrames : 2,
+			numberOfVerticalFrames : 2,
+			ticksPerFrame : 20,
+			loop : true,
+			knight : true,
+			nerd : true,
+			frameIndexMin : Math.floor(Math.random() * 2) * 2,
+			frameIndexMax : Math.floor(Math.random() * 2) * 2 + 2
 		});
 
 		for(var i = 0; i < numChests; i++) {
@@ -193,6 +234,19 @@ function loadImagesThenGo() {
 			}));
 		}
 
+		for(var i = 0; i < numBeers; i++) {
+			beerSprites.push(sprite({
+				context: context,
+				image: beer,
+				numberOfHorizontalFrames : 1,
+				numberOfVerticalFrames : 1,
+				gridX : beers[i].x,
+				gridY : beers[i].y,
+				ticksPerFrame : 20,
+				loop : true
+			}));
+		}
+
 		gameLoop();
 	}
 
@@ -233,6 +287,7 @@ function sprite (options) {
 	that.image = options.image;
 	that.knight = options.knight;
 	that.unti = options.unti;
+	if(that.knight) that.nerd = 0;
 
 	that.numberOfHorizontalFrames = options.numberOfHorizontalFrames || 1;
 	that.numberOfVerticalFrames = options.numberOfVerticalFrames || 1;
@@ -257,7 +312,30 @@ function sprite (options) {
 	that.x = that.gridX * that.frameWidth * scale;
 	that.y = that.gridY * that.frameHeight * scale;
 
+	that.goNerd = function() {
+		knightSprite.image = nerds;
+		var randomNerd = Math.floor(Math.random() * 2);
+		knightSprite.frameIndex = randomNerd * 2;
+		knightSprite.frameIndexMin = randomNerd * 2;
+		knightSprite.frameIndexMax = randomNerd * 2 + 2;
+		knightSprite.nerd = nerdPowerDuration;
+	};
+
+	that.goKnight = function() {
+		knightSprite.image = knight;
+		knightSprite.nerd = 0;
+		knightSprite.frameIndexMin = 0;
+		knightSprite.frameIndexMax = 2;
+	};
+
 	that.update = function () {
+		if(typeof that.nerd !== 'undefined') {
+			that.nerd--;
+			if(that.nerd < 0) {
+				that.nerd = 0;
+				that.goKnight();
+			}
+		}
 		that.tickCount += 1;
 		if (that.tickCount > that.ticksPerFrame) {
 			that.tickCount = 0;
@@ -274,7 +352,8 @@ function sprite (options) {
 			if(that.unti) {
 				grid[that.gridX][that.gridY].unti = false;
 			} else if(grid[that.gridX][that.gridY].unti && that.knight) {
-				that.updateLocation(0,0);
+				if(that.nerd <= 0)
+					that.updateLocation(0,0);
 			}
 
 			if((keyPressed && that.knight) || that.unti) {
@@ -321,15 +400,18 @@ function sprite (options) {
 
 			if(that.unti) {
 				grid[that.gridX][that.gridY].unti = true;
-			} else if(grid[that.gridX][that.gridY].unti && that.knight) {
-				that.updateLocation(0,0);
-			}
-			if(grid[that.gridX][that.gridY].chest && that.knight) {
-				grid[that.gridX][that.gridY].chest = false;
-				for(var i = 0; i < chestSprites.length; i++) {
-					if(chestSprites[i].gridX == that.gridX && chestSprites[i].gridY == that.gridY) {
-						chestSprites[i].hide = true;
-						break;
+			} else if(that.knight) {
+				if(grid[that.gridX][that.gridY].unti && that.nerd <= 0) {
+					that.updateLocation(0,0);
+				} else if(grid[that.gridX][that.gridY].beer && that.nerd <= 0) {
+					that.goNerd();
+				} else if(grid[that.gridX][that.gridY].chest) {
+					grid[that.gridX][that.gridY].chest = false;
+					for(var i = 0; i < chestSprites.length; i++) {
+						if(chestSprites[i].gridX == that.gridX && chestSprites[i].gridY == that.gridY) {
+							chestSprites[i].hide = true;
+							break;
+						}
 					}
 				}
 			}
@@ -387,6 +469,11 @@ function gameLoop() {
   for(var i = 0; i < royaltySprites.length; i++) {
   	royaltySprites[i].update();
   	royaltySprites[i].render();
+  }
+
+  for(var i = 0; i < beerSprites.length; i++) {
+  	beerSprites[i].update();
+  	beerSprites[i].render();
   }
 
   knightSprite.update();
