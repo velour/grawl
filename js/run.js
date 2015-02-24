@@ -3,9 +3,10 @@ var tilesHigh = 10;
 var scale = 4;
 var blocked = 0.15;
 var numChests = 4;
-var numUntis = 4;
+var numUntis = 0;
 var numRoyalty = 2;
 var numBeers = 1;
+var numBoom = 2;
 var nerdPowerDuration = 250;
 
 var canvas = document.getElementById("canvas");
@@ -21,12 +22,13 @@ var unti = new Image();
 var royalty = new Image();
 var beer = new Image();
 var nerds = new Image();
+var boom = new Image();
 var knightSprite = null;
 var chestSprites = [];
 var untiSprites = [];
 var royaltySprites = [];
 var beerSprites = [];
-var nerdSprites = [];
+var boomSprites = [];
 
 var grid = [];
 var chests = [];
@@ -139,6 +141,11 @@ function generateWorld() {
 
 function loadImagesThenGo() {
 	function knightReady() {
+		boom.addEventListener("load", boomReady);
+		boom.src = "img/booms.png";
+	}
+
+	function boomReady() {
 		nerds.addEventListener("load", nerdsReady);
 		nerds.src = "img/nerds.png";
 	}
@@ -184,19 +191,6 @@ function loadImagesThenGo() {
 			ticksPerFrame : 20,
 			loop : true,
 			knight: true
-		});
-
-		nerdSprite = sprite({
-			context: context,
-			image: knight,
-			numberOfHorizontalFrames : 2,
-			numberOfVerticalFrames : 2,
-			ticksPerFrame : 20,
-			loop : true,
-			knight : true,
-			nerd : true,
-			frameIndexMin : Math.floor(Math.random() * 2) * 2,
-			frameIndexMax : Math.floor(Math.random() * 2) * 2 + 2
 		});
 
 		for(var i = 0; i < numChests; i++) {
@@ -254,6 +248,22 @@ function loadImagesThenGo() {
 			}));
 		}
 
+		for(var i = 0; i < numBoom; i++) {
+			boomSprites.push(sprite({
+				context: context,
+				image: boom,
+				numberOfHorizontalFrames : 7,
+				numberOfVerticalFrames : 2,
+				gridX : 0,
+				gridY : 0,
+				ticksPerFrame : 20,
+				frameIndexMin : i * 7,
+				frameIndexMax : i * 7 + 7,
+				loop : false,
+				hide : true
+			}));
+		}
+
 		gameLoop();
 	}
 
@@ -295,6 +305,7 @@ function sprite (options) {
 	that.knight = options.knight;
 	that.unti = options.unti;
 	if(that.knight) that.nerd = 0;
+	that.hide = options.hide;
 
 	that.numberOfHorizontalFrames = options.numberOfHorizontalFrames || 1;
 	that.numberOfVerticalFrames = options.numberOfVerticalFrames || 1;
@@ -354,6 +365,8 @@ function sprite (options) {
 				that.frameIndex += 1;
 			} else if (that.loop) {
 				that.frameIndex = that.frameIndexMin;
+			} else {
+				that.hide = true;
 			}
 
 			that.context.clearRect(that.x, that.y, that.frameWidth * scale, that.frameHeight * scale);
@@ -363,6 +376,18 @@ function sprite (options) {
 			} else if(grid[that.gridX][that.gridY].unti && that.knight) {
 				if(that.nerd <= 0)
 					that.updateLocation(0,0);
+			}
+
+			if(that.knight && that.placeBoom) {
+				that.placeBoom = false;
+				for(var i = 0; i < numBoom; i++) {
+					if(boomSprites[i].hide) {
+						boomSprites[i].updateLocation(that.gridX, that.gridY);
+						boomSprites[i].frameIndex = i * 7;
+						boomSprites[i].hide = false;
+						break;
+					}
+				}
 			}
 
 			if(that.knight || that.unti) {
@@ -498,6 +523,11 @@ function gameLoop() {
   	beerSprites[i].render();
   }
 
+  for(var i = 0; i < boomSprites.length; i++) {
+  	boomSprites[i].update();
+  	boomSprites[i].render();
+  }
+
   knightSprite.update();
   knightSprite.render();
 
@@ -510,7 +540,11 @@ function gameLoop() {
 }
 
 function doKeyDown(e) {
+
 	switch(e.keyCode) {
+		case 32: //space
+		knightSprite.placeBoom = true;
+		break;
 		case 37: //left
 		knightSprite.move = 0;
 		break;
