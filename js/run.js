@@ -34,6 +34,13 @@ var untis = [];
 var royalties = [];
 var beers = [];
 
+var untiCrashes = 0;
+var beersConsumed = 0;
+var chestsOpened = 0;
+var levelsCleared = 0;
+
+var paused = false;
+
 function reshuffleGame() {
 	grid = [];
 	chests = [];
@@ -329,6 +336,8 @@ function sprite (options) {
 	};
 
 	that.update = function () {
+		if(paused) return;
+
 		if(typeof that.nerd !== 'undefined') {
 			that.nerd--;
 			if(that.nerd < 0) {
@@ -402,11 +411,17 @@ function sprite (options) {
 				grid[that.gridX][that.gridY].unti = true;
 			} else if(that.knight) {
 				if(grid[that.gridX][that.gridY].unti && that.nerd <= 0) {
+					document.getElementById('untis').textContent = ++untiCrashes;
+					setAlertMessage("Ah! Untis hurt!");
 					that.updateLocation(0,0);
 				} else if(grid[that.gridX][that.gridY].beer && that.nerd <= 0) {
+					document.getElementById('beers').textContent = ++beersConsumed;
+					setAlertMessage("You've consumed a beer and gained fantastic nerd powers!");
 					that.goNerd();
 				} else if(grid[that.gridX][that.gridY].chest) {
 					grid[that.gridX][that.gridY].chest = false;
+					document.getElementById('chests').textContent = ++chestsOpened;
+					setAlertMessage("Wooo! Another chest!");
 					for(var i = 0; i < chestSprites.length; i++) {
 						if(chestSprites[i].gridX == that.gridX && chestSprites[i].gridY == that.gridY) {
 							chestSprites[i].hide = true;
@@ -418,6 +433,7 @@ function sprite (options) {
 		}
 	}; 
 	that.render = function () {
+
 		var xOff = Math.floor(that.frameIndex % that.numberOfHorizontalFrames) * that.frameWidth;
 		var yOff = Math.floor(that.frameIndex / that.numberOfHorizontalFrames) * that.frameHeight;
 
@@ -480,6 +496,8 @@ function gameLoop() {
   knightSprite.render();
 
   if(theyWon) {
+  	document.getElementById('levels').textContent = ++levelsCleared;
+  	setAlertMessage("LEVEL UP!");
   	reshuffleGame();
   }
 }
@@ -510,3 +528,14 @@ function doKeyUp(e) {
 	keyPressed = false;
 }
 window.addEventListener("keyup", doKeyUp, true);
+
+var timeout = null;
+function setAlertMessage(msg) {
+	document.getElementById('alert').textContent = msg;
+	if(timeout != null) {
+		window.clearTimeout(timeout);
+	}
+	if(msg !== "") {
+		timeout = window.setTimeout(function() { setAlertMessage(""); timeout = null; }, 2000);
+	}
+}
